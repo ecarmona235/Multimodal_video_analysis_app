@@ -4,6 +4,17 @@ import { useState } from "react";
 
 export function YouTubeInput() {
   const [videoUrl, setVideoUrl] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [result, setResult] = useState("");
+
+  const handleSubmit = async () => { 
+    setIsLoading(true)
+    const response = await fetch("/api/video-analysis", {
+      method: "POST",
+      body: JSON.stringify({videoUrl}),
+    });
+    setIsLoading(false);
+  };
 
   return (
     <div className="space-y-6">
@@ -29,9 +40,15 @@ export function YouTubeInput() {
           type="button"
           disabled={!videoUrl.trim()}
           className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-700 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-zinc-900"
-        >
-          Analyze Video
+          onClick={handleSubmit}
+        > 
+          {isLoading ? "Analyzing,please wait.." : "Analyze Video"}
         </button>
+        {isLoading && (
+          <div className="flex justify-center">
+            <div className="h-8 w-8 animated-spin rounded-full border-4 border-zinc-300 border-t-blue-600"/>
+          </div>
+        )}
       </div>
     </div>
   );
