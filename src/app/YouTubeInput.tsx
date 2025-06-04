@@ -5,7 +5,7 @@ import { useState } from "react";
 export function YouTubeInput() {
   const [videoUrl, setVideoUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [result, setResult] = useState("");
+  const [summary, setSummary] = useState("");
 
   const handleSubmit = async () => { 
     setIsLoading(true)
@@ -14,6 +14,8 @@ export function YouTubeInput() {
       body: JSON.stringify({videoUrl}),
     });
     setIsLoading(false);
+    const data = await response.json();
+    setSummary(data.result);
   };
 
   return (
@@ -48,6 +50,14 @@ export function YouTubeInput() {
           <div className="flex justify-center">
             <div className="h-8 w-8 animated-spin rounded-full border-4 border-zinc-300 border-t-blue-600"/>
           </div>
+        )}
+        {summary && (
+          <div className="mt-4 p-4 bg-zinc-900 rounded-lg">
+            <h3 className="text-lg font-semibold text-zinc-300 mb-2">
+              Summay
+            </h3>
+            <p className="text-zinc-400">{summary}</p>
+            </div>
         )}
       </div>
     </div>
