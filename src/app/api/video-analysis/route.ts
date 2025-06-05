@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import { env } from "@/app/config/env";
 import { YoutubeTranscript } from "youtube-transcript";
+import { getGeminiResponse } from "@/utils/geminiClient";
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,16 +11,29 @@ export async function POST(request: NextRequest) {
     //TODO: check if video has a transcription already else do below
     const transcript = await YoutubeTranscript.fetchTranscript(videoUrl);
 
-    const genAI = new GoogleGenerativeAI(env.GEM_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
-
     const prompt = `Analyze this transcript and provide a breakdown of the main topics that are discussed in the video, with timestamps for each topic.
       <VideoTranscript>
         Transcript: ${transcript.map(t => `[${t.offset}] ${t.text}`).join("\n")}
-      </VideoTranscript>`;
+      </VideoTranscript>
+      
+      Provide your response in the following JSON format:
+      {
+        "topics": [
+          {
+            "timestamp": "00:00",
+            "topic": "Topic name"
+          } 
+        ]
+      }
+      `;
+    const result = await getGeminiResponse([
+      {
+        role: "user",
+        content: prompt,
+      },
+    ]);
 
     // TODO: check prompt is not empty else do not send to gemeni
-    const result = await model.generateContent([prompt]);
 
     // TODO: Add video analysis logic here
     // This could include:
@@ -30,7 +42,7 @@ export async function POST(request: NextRequest) {
     // - AI/ML analysis
     // - Database operations
 
-    console.log("Received gemini result,", result.response.text());
+    console.log("Received gemini result,", result);
     return NextResponse.json(result, { status: 200 });
   } catch (error) {
     console.error("Video analysis error:", error);
