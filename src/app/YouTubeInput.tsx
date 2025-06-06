@@ -22,7 +22,7 @@ export function YouTubeInput() {
     setIsLoading(false);
     const data = await response.json();
     const parsedData = data ? JSON.parse(data).topics : undefined;
-    if(parsedData) {
+    if (parsedData) {
       setTopics(parsedData);
     }
   };

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { YoutubeTranscript } from "youtube-transcript";
+import { YoutubeTranscript, TranscriptResponse } from "youtube-transcript";
 import { getGeminiResponse } from "@/utils/geminiClient";
+import redis from "@/utils/redis";
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,18 +10,34 @@ export async function POST(request: NextRequest) {
 
     const videoUrl = body.videoUrl;
     //TODO: check if video has a transcription already else do below
-    const transcript = await YoutubeTranscript.fetchTranscript(videoUrl);
+    const cachedQueryTranscript = await redis.hget(
+      `initial_query:${videoUrl}`,
+      `transcript`
+    );
+    let transcript: TranscriptResponse[] = [];
+    if (cachedQueryTranscript) {
+      transcript = JSON.parse(cachedQueryTranscript);
+    } else {
+      transcript = await YoutubeTranscript.fetchTranscript(videoUrl);
 
+      if (transcript.length > 0) {
+        await redis.hset(
+          `initial_query:${videoUrl}`,
+          `transcript`,
+          JSON.stringify(transcript)
+        );
+      }
+    }
     const prompt = `Analyze this transcript and provide a breakdown of the main topics that are discussed in the video, with timestamps for each topic.
       <VideoTranscript>
-        Transcript: ${transcript.map(t => `[${t.offset}] ${t.text}`).join("\n")}
+        Transcript: ${transcript.map((t: TranscriptResponse) => `[${t.offset}] ${t.text}`).join("\n")}
       </VideoTranscript>
       
       Provide your response in the following JSON format:
       {
         "topics": [
           {
-            "timestamp": "00:00",
+            "timestamp": "HH:MM:SS",
             "topic": "Topic name"
           } 
         ]
@@ -33,16 +50,10 @@ export async function POST(request: NextRequest) {
       },
     ]);
 
-    // TODO: check prompt is not empty else do not send to gemeni
-
-    // TODO: Add video analysis logic here
-    // This could include:
-    // - File upload handling
-    // - Video processing
-    // - AI/ML analysis
-    // - Database operations
-
-    console.log("Received gemini result,", result);
+    if (result.length > 0) {
+      await redis.hset(`initial_query:${videoUrl}`, `long analysis`, result);
+    }
+    console.log("Video analysis result:", result);
     return NextResponse.json(result, { status: 200 });
   } catch (error) {
     console.error("Video analysis error:", error);
