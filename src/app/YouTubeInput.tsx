@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useState } from "react";
+import { OptimizedYouTubeEmbed } from "./EmbedVideo";
 
 interface Topic {
   timestamp: string;
@@ -46,7 +47,6 @@ export function YouTubeInput() {
             className="w-full px-4 py-3 bg-white/[0.05] border border-white/[0.1] rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
           />
         </div>
-
         <button
           type="button"
           disabled={!videoUrl.trim()}
@@ -62,6 +62,13 @@ export function YouTubeInput() {
         )}
         {topics?.length > 0 && (
           <div className="mt-4 p-4 bg-zinc-900 rounded-lg">
+            <div className="mx-auto w-full max-w-lg border border-zinc-700 rounded-lg overflow-hidden mb-4">
+              <OptimizedYouTubeEmbed
+                videoUrl={videoUrl}
+                width="100%"
+                height="400px"
+              />
+            </div>
             <h3 className="text-lg font-semibold text-zinc-300 mb-2">
               Video Topics Timeline
             </h3>
