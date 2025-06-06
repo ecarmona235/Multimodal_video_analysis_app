@@ -13,6 +13,7 @@ export function YouTubeInput() {
   const [videoUrl, setVideoUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [topics, setTopics] = useState<Topic[]>([]);
+  const [startTime, setStartTime] = useState<number>(0);
 
   const handleSubmit = async () => {
     setIsLoading(true);
@@ -67,6 +68,7 @@ export function YouTubeInput() {
                 videoUrl={videoUrl}
                 width="100%"
                 height="400px"
+                startTime={startTime}
               />
             </div>
             <h3 className="text-lg font-semibold text-zinc-300 mb-2">
@@ -75,9 +77,24 @@ export function YouTubeInput() {
             <div className="space-y-3">
               {topics?.map((item, index) => (
                 <div key={index} className="flex items-start gap-3 text-sm">
-                  <span className="min-w-[60px] px-2 py-1 bg-zinc-800 rounded text-zinc-300 font-mono">
+                  <button
+                    type="button"
+                    className="min-w-[60px] px-2 py-1 bg-zinc-800 rounded text-zinc-300 font-mono hover:bg-blue-700 transition"
+                    onClick={() => {
+                      // Convert timestamp (e.g., "01:23:45") to seconds
+                      const parts = item.timestamp
+                        .split(":")
+                        .map(Number)
+                        .reverse();
+                      const seconds =
+                        (parts[0] || 0) +
+                        (parts[1] || 0) * 60 +
+                        (parts[2] || 0) * 3600;
+                      setStartTime(seconds);
+                    }}
+                  >
                     {item.timestamp}
-                  </span>
+                  </button>
                   <span className="text-zinc-400">{item.topic}</span>
                 </div>
               ))}
