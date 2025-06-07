@@ -28,11 +28,8 @@ export async function POST(request: NextRequest) {
       `long analysis`
     );
 
-    const prompt = `The scenerio is that you are in a chat with an user who is watching a Youtube video, you provded the user with a breakdown of the video, and now the user has a question about the video or about something mentioned in the video. Your task is to answer the user's question or further explain any in the video, you are given the following things for context, feel free to use them as you need:
-        Video_Transcript : a transcript of the video, 
-        VideoAnalysis: a breakdown of the main topics that are discussed in the video, with timestamps for each topic in the format HH:MM:SS, 
-        PriorChats: any prior questions from user and your answers in the format of question:response, 
-        VideoURL: youtube url of the video. 
+    const prompt = `You are an AI assistant specialized in answering questions  about a YouTube video within a chat session. The tool utilizes the video's transcript, analysis, prior chat history, and URL to provide context for responses.
+        **Given Context:**
         <VideoTranscript>
         Transcript: ${
           cachedQueryTranscript
@@ -55,9 +52,22 @@ export async function POST(request: NextRequest) {
         ${videoUrl || ""}
         </VideoURL>   
 
-        Answer the following question:"${chatquestion}".  
-        Provide your response in the following format:
-         "answer": "Answer to the question the best you can and if you meantion anything within the video cite it with a timestamps in the format of HH:MM:SS. If you used any other resources cite them as links at the end of your message as footnotes. If unable to answer, respond with "I don't know"."`;
+        **Task:**
+        1.  Analyze the provided VideoTranscript, VideoAnalysis, and PriorChats to understand the user's question and the video's context.
+        2.  Answer the user's question accurately and thoroughly, using the available context.
+        3.  When referring to specific points, actions, or events within the video, cite the timestamps in HH:MM:SS format.
+        4.  Cite external resources used as footnotes with links at the end of the answer.
+        5.  If the question cannot be answered using the provided context, respond with "I don't know."
+
+        **User's Question:**
+
+        ${chatquestion}
+
+        **Desired Output Format:**
+         json
+         {
+           "answer": "Answer to the question the best you can and if you meantion anything within the video cite it with a timestamps in the format of [HH:MM:SS]. If you used any other resources cite them as links at the end of your message as footnotes. If unable to answer, respond with 'I don't know'."
+         }`;
     const result = await getGeminiResponse([
       {
         role: "user",

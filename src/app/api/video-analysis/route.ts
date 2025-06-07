@@ -29,6 +29,7 @@ export async function POST(request: NextRequest) {
       }
     }
     const prompt = `Analyze this transcript, where the offset time is given in seconds, and provide a breakdown of the main topics that are discussed in the video, with timestamps for each topic.
+      Video_Transcript : a transcript of the video in the formt of offset in seconds and text 
       <VideoTranscript>
         Transcript: ${transcript.map((t: TranscriptResponse) => `[${t.offset}] ${t.text}`).join("\n")}
       </VideoTranscript>

@@ -16,38 +16,49 @@ export async function POST(request: NextRequest) {
       `initial_query:${videoUrl}`,
       `long analysis`
     );
+    console.log("search question:", searchQuestion);
+    const prompt = `You are an AI assistant specialized in analyzing YouTube videos to locate specific moments based on the provided video transcript, Youtube URL and your past analysis. The goal is to identify the starting time (HH:MM:SS) where the user's search query is visually or audibly represented in the video.
+        **Given Context:**
 
-    const prompt = `The scenerio is that you are in a chat with an user who is searching for a specific thing in within the youtube video, you are given the following things for context:
-        Video_Transcript : a transcript of the video, 
-        VideoAnalysis: a breakdown of the main topics that are discussed in the video, with timestamps for each topic in the format HH:MM:SS, 
-        VideoURL: youtube url of the video.
-    Feel free to use them as needed, if the question is about something that is visually presented in the video you may have to further analyze the video of the given url to answer the question. Your task is to find the specific thing the user is searching for in the video whether its a visual search or an auditory one and provide the starting time of when it appears in seconds, if you are unable to find it, respond with "I don't know".
-        
         <VideoTranscript>
         Transcript: ${
           cachedQueryTranscript
             ? JSON.parse(cachedQueryTranscript)
                 .map(
                   (t: { offset: number; text: string }) =>
-                    `[${t.offset}] ${t.text}`
+                    `[${t.offset}] ${t.text}` // Timestamps in seconds
                 )
                 .join("\n")
             : ""
         }
         </VideoTranscript>
-        
+
         <VideoAnalysis>
-        Analysis: ${cachedQueryAnalysis || ""}
+        Analysis: ${cachedQueryAnalysis || ""} // Timestamps in HH:MM:SS
         </VideoAnalysis>
-        
+
         <VideoURL>
         ${videoUrl || ""}
         </VideoURL>
 
-        The user's question is: "${searchQuestion}". 
-        Provide your response in the following JSON format:
+        **Task:**
+
+        1.  Analyze the provided VideoTranscript and VideoAnalysis in conjunction with the user's searchQuestion.
+        2.  Determine the specific moment in the video that corresponds to the user's question, considering both auditory and visual cues mentioned in the context.
+        3.  If the search query is related to a timestamp found in the VideoAnalysis, use that timestamp (HH:MM:SS).
+        4.  If the search query is related to a timestamp found in the VideoTranscript (which are in seconds), convert the seconds to HH:MM:SS format.
+        5.  If multiple instances of the search query exist, return the starting time of the *first* instance found.
+        6.  If the requested moment in the video cannot be confidently identified based on the provided context, respond with "I don't know".
+
+        **User's Question:**
+
+        "${searchQuestion}"
+
+        **Desired Output Format:**
+
+        json
         {
-            "startingTime": "seconds",
+            "startingTime": "HH:MM:SS" // Or "I don't know"
         }`;
 
     const result = await getGeminiResponse([

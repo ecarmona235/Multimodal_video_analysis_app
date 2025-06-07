@@ -62,7 +62,10 @@ export function YouTubeInput() {
     const data = await response.json();
     const parsedData = data ? JSON.parse(data).startingTime : undefined;
     if (parsedData) {
-      setStartingTime(parsedData);
+      const parts = parsedData.split(":").map(Number).reverse();
+      const seconds =
+        (parts[0] || 0) + (parts[1] || 0) * 60 + (parts[2] || 0) * 3600;
+      setStartingTime(seconds);
     }
   };
 
@@ -150,7 +153,7 @@ export function YouTubeInput() {
             </div>
             <div className="chat-input-container flex h-50 overflow-y-auto bg-gray-100 p-4 rounded-full">
               <textarea
-                className="flex-1 resize-none rounded-lg p-2 border border-gray-300"
+                className="flex-1 resize-none rounded-lg p-2 border border-gray-300 text-zinc-300"
                 value={chatQuestion}
                 onChange={e => setChatQuestion(e.target.value)}
                 placeholder="Type your question..."
@@ -200,7 +203,7 @@ export function YouTubeInput() {
             </div>
             <div className="chat-input-container flex h-50 overflow-y-auto bg-gray-100 p-4 rounded-full">
               <textarea
-                className="flex-1 resize-none rounded-lg p-2 border border-gray-300"
+                className="flex-1 resize-none rounded-lg p-2 border border-gray-300 text-zinc-300"
                 value={searchQuestion}
                 onChange={e => setSearchQuestion(e.target.value)}
                 placeholder="Type your search question..."
@@ -218,13 +221,14 @@ export function YouTubeInput() {
               </div>
             )}
             {startingTime > 0 && (
-              <div>
-                <div className="mx-auto w-full max-w-lg border border-zinc-700 rounded-lg overflow-hidden mb-4">
+              <div className="mx-auto w-full max-w-lg border border-zinc-700 rounded-lg overflow-hidden">
+                <div className="mx-auto w-full max-w-lg border border-zinc-700 rounded-lg overflow-hidden">
                   <OptimizedYouTubeEmbed
                     videoUrl={videoUrl}
                     width="100%"
                     height="400px"
                     startTime={startingTime}
+                    autoPlay={1}
                   />
                 </div>
               </div>

@@ -2,18 +2,19 @@ import { YouTubeEmbed } from "@next/third-parties/google";
 import React, { use, useEffect, useRef } from "react";
 import { getYouTubeVideoIdFromUrl } from "@/utils/youtube";
 import { useState } from "react";
-import { YouTubeInput } from "./YouTubeInput";
+
 
 interface OptimizedYouTubeEmbedProps {
   videoUrl: string; // Accepts the full YouTube video URL
   startTime?: number;
   width?: string | number;
   height?: string | number;
+  autoPlay?: number; // Optional prop to control autoplay
 }
 
 export function OptimizedYouTubeEmbed({
   videoUrl,
-  startTime = 0,
+  startTime=0,
   width,
   height,
   ...rest
@@ -26,7 +27,9 @@ export function OptimizedYouTubeEmbed({
     setVideoId(id);
   }, [videoUrl]); // Re-run effect when URL changes
   useEffect(() => {
-    seekTo(startTime);
+    setAutoPlay(1); // Set autoplay to 1 to play the video after seeking
+    seekTo(startTime); // Seek to startTime when the component mounts or startTime changes
+    
   }, [startTime]); // Re-run effect when startTime changes}
   useEffect(() => {
     // This effect loads the YouTube IFrame Player API
@@ -43,7 +46,7 @@ export function OptimizedYouTubeEmbed({
           // 'youtube-player' should match the iframe ID
           videoId: videoId,
           playerVars: {
-            autoplay: 0,
+            autoplay: 0, // Use the autoPlay prop or default to 0
             enablejsapi: 1, // Crucial for API interaction
           },
           events: {
