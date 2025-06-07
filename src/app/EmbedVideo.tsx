@@ -20,6 +20,7 @@ export function OptimizedYouTubeEmbed({
 }: OptimizedYouTubeEmbedProps) {
   const [videoId, setVideoId] = useState<string | null>(null);
   const playerRef = useRef<any>(null); // Ref to hold the YouTube player instance
+  const [autoPlay, setAutoPlay] = useState(0); // State to manage autoplay
   useEffect(() => {
     const id = getYouTubeVideoIdFromUrl(videoUrl);
     setVideoId(id);
@@ -64,6 +65,7 @@ export function OptimizedYouTubeEmbed({
   const seekTo = (seconds: number) => {
     console.log(`Seeking to ${seconds} seconds`);
     if (playerRef.current && playerRef.current.seekTo) {
+      setAutoPlay(1); // Set autoplay to 1 to play the video after seeking
       playerRef.current.seekTo(seconds, true); // seekTo(seconds, allowSeekAhead)
     }
   };
@@ -91,7 +93,7 @@ export function OptimizedYouTubeEmbed({
           // The src will be constructed by the YouTubeEmbed component.
           // ensure 'enablejsapi=1' is included in the params prop if you use it for other parameters.
           // If not using params for anything else, you can explicitly add it to the src here:
-          src={`https://www.youtube.com/embed/${videoId}?enablejsapi=1`}
+          src={`https://www.youtube.com/embed/${videoId}?enablejsapi=1&autoplay=${autoPlay}`}
           title="YouTube video player"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen

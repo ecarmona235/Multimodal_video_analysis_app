@@ -52,8 +52,9 @@ export async function POST(request: NextRequest) {
 
     if (result.length > 0) {
       await redis.hset(`initial_query:${videoUrl}`, `long analysis`, result);
+      await redis.expire(`initial_query:${videoUrl}`, 3600); // Set expiration to 1 hour
     }
-    await redis.expire(`initial_query:${videoUrl}`, 3600); // Set expiration to 1 hour
+
     console.log("Video analysis result:", result);
     return NextResponse.json(result, { status: 200 });
   } catch (error) {

@@ -4,6 +4,7 @@ import React from "react";
 import { useState } from "react";
 import { OptimizedYouTubeEmbed } from "./EmbedVideo";
 
+
 interface Topic {
   timestamp: string;
   topic: string;
@@ -14,6 +15,10 @@ export function YouTubeInput() {
   const [isLoading, setIsLoading] = useState(false);
   const [topics, setTopics] = useState<Topic[]>([]);
   const [startTime, setStartTime] = useState<number>(0);
+  const [chatCount, setChatCount] = useState(0);
+  const [chatQuestion, setChatQuestion] = useState("");
+  const [isChatLoading, setIsChatLoading] = useState(false);
+  const [answer, setAnswer] = useState("");
 
   const handleSubmit = async () => {
     setIsLoading(true);
@@ -21,11 +26,27 @@ export function YouTubeInput() {
       method: "POST",
       body: JSON.stringify({ videoUrl }),
     });
+
     setIsLoading(false);
     const data = await response.json();
     const parsedData = data ? JSON.parse(data).topics : undefined;
     if (parsedData) {
       setTopics(parsedData);
+    }
+  };
+
+  const handleChats = async () => {
+    setIsChatLoading(true);
+    const response = await fetch("/api/video-chat", {
+      method: "POST",
+      body: JSON.stringify({ videoUrl, chatQuestion, chatCount }),
+    });
+    setIsChatLoading(false);
+    setChatCount(chatCount + 1);
+    const data = await response.json();
+    const parsedData = data ? JSON.parse(data).answer : undefined;
+    if (parsedData) {
+      setAnswer(parsedData);
     }
   };
 
@@ -35,7 +56,7 @@ export function YouTubeInput() {
         <div>
           <label
             htmlFor="youtube-url"
-            className="block text-sm font-medium text-zinc-300 mb-2"
+            className="text-lg font-semibold text-zinc-300 mb-2"
           >
             YouTube Video URL
           </label>
@@ -71,9 +92,11 @@ export function YouTubeInput() {
                 startTime={startTime}
               />
             </div>
-            <h3 className="text-lg font-semibold text-zinc-300 mb-2">
-              Video Topics Timeline
-            </h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-zinc-300 mb-2">
+                Video Topics Timeline
+              </h3>
+            </div>
             <div className="space-y-3">
               {topics?.map((item, index) => (
                 <div key={index} className="flex items-start gap-3 text-sm">
@@ -99,6 +122,54 @@ export function YouTubeInput() {
                 </div>
               ))}
             </div>
+          </div>
+        )}
+        
+        {topics?.length > 0 && (
+          <div className="flex flex-col overflow-y-auto bg-gray-100 p-4 rounded-lg">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-zinc-300 mb-2">
+                Video Chat
+              </h3>
+            </div>
+            <div className="chat-input-container flex h-50 overflow-y-auto bg-gray-100 p-4 rounded-full">
+              <textarea 
+                className= "flex-1 resize-none rounded-lg p-2 border border-gray-300"
+                value={chatQuestion}
+                onChange={e => setChatQuestion(e.target.value)}
+                placeholder="Type your question..."
+              />
+              <button onClick={handleChats}
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-full ml-2 disabled:bg-zinc-700 disabled:cursor-not-allowed"
+              >Send</button>
+            </div>
+            {isChatLoading && (
+              <div className="flex justify-center">
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-zinc-300 border-t-blue-600" />
+              </div>
+            )}
+            {answer?.length > 0 && (
+              <div>
+                {answer.split(" ").map((line, index) => {
+                  if(line.match( /\(?\d{2}:\d{2}:\d{2}\)?/g)) {
+                    const parts = line
+                        .split(":")
+                        .map(Number)
+                        .reverse();
+                      const seconds =
+                        (parts[0] || 0) +
+                        (parts[1] || 0) * 60 +
+                        (parts[2] || 0) * 3600;
+                    return (
+                      <button onClick={() => setStartTime(seconds)}>
+                        {line}
+                      </button>
+                    )
+                  }
+                  return `${line} `;
+                })}
+              </div>
+            )}
           </div>
         )}
       </div>
