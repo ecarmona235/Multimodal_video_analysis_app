@@ -18,6 +18,9 @@ export function YouTubeInput() {
   const [chatQuestion, setChatQuestion] = useState("");
   const [isChatLoading, setIsChatLoading] = useState(false);
   const [answer, setAnswer] = useState("");
+  const [isSearchLoading, setIsSearchLoading] = useState(false);
+  const [searchQuestion, setSearchQuestion] = useState("");
+  const [startingTime, setStartingTime] = useState<number>(0);
 
   const handleSubmit = async () => {
     setIsLoading(true);
@@ -46,6 +49,20 @@ export function YouTubeInput() {
     const parsedData = data ? JSON.parse(data).answer : undefined;
     if (parsedData) {
       setAnswer(parsedData);
+    }
+  };
+
+  const handleSearch = async () => {
+    setIsSearchLoading(true);
+    const response = await fetch("/api/video-search", {
+      method: "POST",
+      body: JSON.stringify({ videoUrl, searchQuestion }),
+    });
+    setIsSearchLoading(false);
+    const data = await response.json();
+    const parsedData = data ? JSON.parse(data).startingTime : undefined;
+    if (parsedData) {
+      setStartingTime(parsedData);
     }
   };
 
@@ -160,13 +177,56 @@ export function YouTubeInput() {
                       (parts[1] || 0) * 60 +
                       (parts[2] || 0) * 3600;
                     return (
-                      <button onClick={() => setStartTime(seconds)}>
+                      <button
+                        onClick={() => setStartTime(seconds)}
+                        className="bg-blue-200 hover:bg-blue-300 text-white font-bold py-1 px-1 rounded-full ml-2 disabled:bg-zinc-700 disabled:cursor-not-allowed"
+                      >
                         {line}
                       </button>
                     );
                   }
-                  return `${line} `;
+                  return ` ${line} `;
                 })}
+              </div>
+            )}
+          </div>
+        )}
+        {topics?.length > 0 && (
+          <div className="flex flex-col overflow-y-auto bg-gray-100 p-4 rounded-lg">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-zinc-300 mb-2">
+                Visual Video Search
+              </h3>
+            </div>
+            <div className="chat-input-container flex h-50 overflow-y-auto bg-gray-100 p-4 rounded-full">
+              <textarea
+                className="flex-1 resize-none rounded-lg p-2 border border-gray-300"
+                value={searchQuestion}
+                onChange={e => setSearchQuestion(e.target.value)}
+                placeholder="Type your search question..."
+              />
+            </div>
+            <button
+              onClick={handleSearch}
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-full ml-2 disabled:bg-zinc-700 disabled:cursor-not-allowed"
+            >
+              Search
+            </button>
+            {isSearchLoading && (
+              <div className="flex justify-center">
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-zinc-300 border-t-blue-600" />
+              </div>
+            )}
+            {startingTime > 0 && (
+              <div>
+                <div className="mx-auto w-full max-w-lg border border-zinc-700 rounded-lg overflow-hidden mb-4">
+                  <OptimizedYouTubeEmbed
+                    videoUrl={videoUrl}
+                    width="100%"
+                    height="400px"
+                    startTime={startingTime}
+                  />
+                </div>
               </div>
             )}
           </div>
