@@ -4,7 +4,6 @@ import React from "react";
 import { useState } from "react";
 import { OptimizedYouTubeEmbed } from "./EmbedVideo";
 
-
 interface Topic {
   timestamp: string;
   topic: string;
@@ -124,7 +123,7 @@ export function YouTubeInput() {
             </div>
           </div>
         )}
-        
+
         {topics?.length > 0 && (
           <div className="flex flex-col overflow-y-auto bg-gray-100 p-4 rounded-lg">
             <div className="flex items-center justify-between mb-4">
@@ -133,15 +132,18 @@ export function YouTubeInput() {
               </h3>
             </div>
             <div className="chat-input-container flex h-50 overflow-y-auto bg-gray-100 p-4 rounded-full">
-              <textarea 
-                className= "flex-1 resize-none rounded-lg p-2 border border-gray-300"
+              <textarea
+                className="flex-1 resize-none rounded-lg p-2 border border-gray-300"
                 value={chatQuestion}
                 onChange={e => setChatQuestion(e.target.value)}
                 placeholder="Type your question..."
               />
-              <button onClick={handleChats}
+              <button
+                onClick={handleChats}
                 className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-full ml-2 disabled:bg-zinc-700 disabled:cursor-not-allowed"
-              >Send</button>
+              >
+                Send
+              </button>
             </div>
             {isChatLoading && (
               <div className="flex justify-center">
@@ -151,20 +153,17 @@ export function YouTubeInput() {
             {answer?.length > 0 && (
               <div>
                 {answer.split(" ").map((line, index) => {
-                  if(line.match( /\(?\d{2}:\d{2}:\d{2}\)?/g)) {
-                    const parts = line
-                        .split(":")
-                        .map(Number)
-                        .reverse();
-                      const seconds =
-                        (parts[0] || 0) +
-                        (parts[1] || 0) * 60 +
-                        (parts[2] || 0) * 3600;
+                  if (line.match(/\(?\d{2}:\d{2}:\d{2}\)?/g)) {
+                    const parts = line.split(":").map(Number).reverse();
+                    const seconds =
+                      (parts[0] || 0) +
+                      (parts[1] || 0) * 60 +
+                      (parts[2] || 0) * 3600;
                     return (
                       <button onClick={() => setStartTime(seconds)}>
                         {line}
                       </button>
-                    )
+                    );
                   }
                   return `${line} `;
                 })}
