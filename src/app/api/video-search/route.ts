@@ -17,38 +17,11 @@ export async function POST(request: NextRequest) {
       `long analysis`
     );
     console.log("search question:", searchQuestion);
-    const prompt = `You are an AI assistant specialized in analyzing YouTube videos to locate specific moments based on the provided video transcript, Youtube URL and your past analysis. The goal is to identify the starting time (HH:MM:SS) where the user's search query is visually or audibly represented in the video.
-        **Given Context:**
-
-        <VideoTranscript>
-        Transcript: ${
-          cachedQueryTranscript
-            ? JSON.parse(cachedQueryTranscript)
-                .map(
-                  (t: { offset: number; text: string }) =>
-                    `[${t.offset}] ${t.text}` // Timestamps in seconds
-                )
-                .join("\n")
-            : ""
-        }
-        </VideoTranscript>
-
-        <VideoAnalysis>
-        Analysis: ${cachedQueryAnalysis || ""} // Timestamps in HH:MM:SS
-        </VideoAnalysis>
-
-        <VideoURL>
-        ${videoUrl || ""}
-        </VideoURL>
+    const prompt = `You are an AI assistant specialized in analysis of user question to extract search queries related to the content of a video.
 
         **Task:**
 
-        1.  Analyze the provided VideoTranscript and VideoAnalysis in conjunction with the user's searchQuestion.
-        2.  Determine the specific moment in the video that corresponds to the user's question, considering both auditory and visual cues mentioned in the context.
-        3.  If the search query is related to a timestamp found in the VideoAnalysis, use that timestamp (HH:MM:SS).
-        4.  If the search query is related to a timestamp found in the VideoTranscript (which are in seconds), convert the seconds to HH:MM:SS format.
-        5.  If multiple instances of the search query exist, return the starting time of the *first* instance found.
-        6.  If the requested moment in the video cannot be confidently identified based on the provided context, use the url to scan the frames in the video youtube video.
+        1. Extract the minimal amount keywords from the user's question need to be able to do a search query matching to the content of the video frames by another function
 
         **User's Question:**
 
@@ -58,7 +31,7 @@ export async function POST(request: NextRequest) {
 
         json
         {
-            "startingTime": "HH:MM:SS" 
+            "searchQuery": "keyword1....+keywordN", 
         }`;
 
     const result = await getGeminiResponse([

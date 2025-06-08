@@ -19,7 +19,7 @@ export function YouTubeInput() {
   const [answer, setAnswer] = useState("");
   const [isSearchLoading, setIsSearchLoading] = useState(false);
   const [searchQuestion, setSearchQuestion] = useState("");
-  const [startingTime, setStartingTime] = useState<number>(0);
+  const [searchQueries, setSearchQueries] = useState("");
 
   const handleSubmit = async () => {
     setIsLoading(true);
@@ -59,13 +59,11 @@ export function YouTubeInput() {
     });
     setIsSearchLoading(false);
     const data = await response.json();
-    const parsedData = data ? JSON.parse(data).startingTime : undefined;
-    if (parsedData) {
-      const parts = parsedData.split(":").map(Number).reverse();
-      const seconds =
-        (parts[0] || 0) + (parts[1] || 0) * 60 + (parts[2] || 0) * 3600;
-      setStartingTime(seconds);
+    const parsedData = data ? JSON.parse(data).searchQuery : "";
+    if (parsedData !== "") {
+      setSearchQueries(parsedData);
     }
+    console.log("Search Queries:", parsedData);
   };
 
   const handleInlineCLicks = (timeStamp: string) => {
@@ -215,7 +213,7 @@ export function YouTubeInput() {
                 <div className="h-8 w-8 animate-spin rounded-full border-4 border-zinc-300 border-t-blue-600" />
               </div>
             )}
-            {startingTime > 0 && (
+            {/* {startingTime > 0 && (
               <div>
                 <div className="overflow-hidden mb-4 p-4">
                   <IframeYouTubeEmbed
@@ -228,7 +226,7 @@ export function YouTubeInput() {
                   />
                 </div>
               </div>
-            )}
+            )} */}
           </div>
         )}
       </div>
