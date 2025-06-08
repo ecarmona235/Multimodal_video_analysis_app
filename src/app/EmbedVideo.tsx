@@ -29,6 +29,7 @@ export function OptimizedYouTubeEmbed({
   useEffect(() => {
     setAutoPlay(1); // Set autoplay to 1 to play the video after seeking
     seekTo(startTime); // Seek to startTime when the component mounts or startTime changes
+    console.log(`Seeking to start time: ${startTime}`);
     
   }, [startTime]); // Re-run effect when startTime changes}
   useEffect(() => {

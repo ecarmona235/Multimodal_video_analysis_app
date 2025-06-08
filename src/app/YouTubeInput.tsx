@@ -3,7 +3,6 @@
 import React from "react";
 import { useState } from "react";
 import { OptimizedYouTubeEmbed } from "./EmbedVideo";
-
 interface Topic {
   timestamp: string;
   topic: string;
@@ -102,7 +101,7 @@ export function YouTubeInput() {
           </div>
         )}
         {topics?.length > 0 && (
-          <div className="mt-4 p-4 bg-zinc-900 rounded-lg">
+          <div className="flex flex-col overflow-y-auto bg-gray-100 p-4 rounded-lg">
             <div className="mx-auto w-full max-w-lg border border-zinc-700 rounded-lg overflow-hidden mb-4">
               <OptimizedYouTubeEmbed
                 videoUrl={videoUrl}
@@ -221,7 +220,7 @@ export function YouTubeInput() {
               </div>
             )}
             {startingTime > 0 && (
-              <div className="mx-auto w-full max-w-lg border border-zinc-700 rounded-lg overflow-hidden">
+              <div className=" p-4 rounded-lg border-zinc-700 mt-4">
                 <div className="mx-auto w-full max-w-lg border border-zinc-700 rounded-lg overflow-hidden">
                   <OptimizedYouTubeEmbed
                     videoUrl={videoUrl}
@@ -229,7 +228,7 @@ export function YouTubeInput() {
                     height="400px"
                     startTime={startingTime}
                     autoPlay={1}
-                  />
+                  />                  
                 </div>
               </div>
             )}
