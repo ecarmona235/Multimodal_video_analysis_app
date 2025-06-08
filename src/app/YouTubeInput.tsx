@@ -68,17 +68,12 @@ export function YouTubeInput() {
     }
   };
 
-  const handleInlineCLicks = (timeStamp : string) => {
-    const parts = timeStamp
-    .split(":")
-    .map(Number)
-    .reverse();
-  const seconds =
-    (parts[0] || 0) +
-    (parts[1] || 0) * 60 +
-    (parts[2] || 0) * 3600;
+  const handleInlineCLicks = (timeStamp: string) => {
+    const parts = timeStamp.split(":").map(Number).reverse();
+    const seconds =
+      (parts[0] || 0) + (parts[1] || 0) * 60 + (parts[2] || 0) * 3600;
     setStartTime(seconds);
-  }
+  };
 
   return (
     <div className="space-y-6">
@@ -230,12 +225,12 @@ export function YouTubeInput() {
                     height="500px"
                     autoPlay={1}
                     startOnTime={true}
-                  />                  
+                  />
                 </div>
               </div>
             )}
           </div>
-         )}
+        )}
       </div>
     </div>
   );

@@ -39,7 +39,6 @@ export function IframeYouTubeEmbed({
     tag.src = "https://www.youtube.com/iframe_api";
     const firstScriptTag = document.getElementsByTagName("script")[0]; // Use index 0 to get the first script tag
     firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
-    
 
     (window as any).onYouTubeIframeAPIReady = () => {
       // API is ready, you can now create a player instance
@@ -58,8 +57,6 @@ export function IframeYouTubeEmbed({
       }
     };
 
-
-
     return () => {
       // Clean up the player instance when the component unmounts
       if (playerRef.current && playerRef.current.destroy) {
@@ -67,7 +64,6 @@ export function IframeYouTubeEmbed({
       }
     };
   }, [videoId]); // Re-run effect when videoId changes to create a new player
-
 
   // Function to seek to a specific time and play
   const seekTo = (seconds: number) => {
@@ -94,7 +90,6 @@ export function IframeYouTubeEmbed({
   if (!videoId) {
     return <div>Invalid YouTube URL or video ID not found.</div>;
   }
-
 
   return (
     <div>
