@@ -1,23 +1,27 @@
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI
 from fastapi.background import BackgroundTasks
-from video_tasks import download_and_prepare_video
+from pydantic import BaseModel
+from video_tasks import extract_frames_from_youtube
 from clip_search import search_video
+from pathlib import Path
 
 app = FastAPI()
 
-@app.post("/upload/")
-async def upload_video(file: UploadFile = File(...), background_tasks: BackgroundTasks = None):
-    # Save uploaded video
-    video_path = f"video_store/{file.filename}"
-    with open(video_path, "wb") as f:
-        f.write(await file.read())
+class YouTubeRequest(BaseModel):
+    url: str
 
-    # Schedule background processing
-    background_tasks.add_task(download_and_prepare_video, video_path)
+class SearchRequest(BaseModel):
+    query: str
+    video_id: str
 
-    return {"message": "Upload received", "video_path": video_path}
+@app.post("/process_youtube/")
+async def process_youtube_video(request: YouTubeRequest, background_tasks: BackgroundTasks):
+    background_tasks.add_task(extract_frames_from_youtube, request.url)
+    return {"message": "Video download and frame extraction started", "url": request.url}
+
 
 
 @app.post("/search/")
-async def search(query: str, video_path: str):
-    return search_video(video_path, query)
+async def search(request: SearchRequest):
+    video_path = Path(f"video_store/downloads/{request.video_id}.mp4")
+    return search_video(video_path, request.query)

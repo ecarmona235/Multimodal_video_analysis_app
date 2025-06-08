@@ -9,12 +9,17 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 model, preprocess = clip.load("ViT-B/32", device=device)
 
 def search_video(video_path: Path, query: str):
+
+    
     basename = video_path.stem
-    frame_dir = video_path.parent / f"frames_{basename}"
+    frame_dir = video_path.parent.parent / f"frames_{basename}"
+ 
 
     # Load timestamps map
     with open(frame_dir / "timestamps.json", "r") as f:
         timestamps = json.load(f)
+    
+    print("Finished loading timestamps")
 
     text = clip.tokenize([query]).to(device)
     with torch.no_grad():
@@ -22,6 +27,7 @@ def search_video(video_path: Path, query: str):
         text_features /= text_features.norm(dim=-1, keepdim=True)
 
         results = []
+        print("scanning ... ")
 
         for fname in sorted(os.listdir(frame_dir)):
             if not fname.endswith(".jpg"):
@@ -42,6 +48,7 @@ def search_video(video_path: Path, query: str):
 
         # Sort results descending by similarity score
         results.sort(key=lambda x: x["score"], reverse=True)
+        print("Returning...")
 
         # Return top 5 matches with frame, timestamp, score
         return results[:5]
