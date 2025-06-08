@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useState } from "react";
-import { OptimizedYouTubeEmbed } from "./EmbedVideo";
+import { IframeYouTubeEmbed } from "./EmbedVideo";
 interface Topic {
   timestamp: string;
   topic: string;
@@ -68,6 +68,18 @@ export function YouTubeInput() {
     }
   };
 
+  const handleInlineCLicks = (timeStamp : string) => {
+    const parts = timeStamp
+    .split(":")
+    .map(Number)
+    .reverse();
+  const seconds =
+    (parts[0] || 0) +
+    (parts[1] || 0) * 60 +
+    (parts[2] || 0) * 3600;
+    setStartTime(seconds);
+  }
+
   return (
     <div className="space-y-6">
       <div className="space-y-4">
@@ -101,17 +113,17 @@ export function YouTubeInput() {
           </div>
         )}
         {topics?.length > 0 && (
-          <div className="flex flex-col overflow-y-auto bg-gray-100 p-4 rounded-lg">
-            <div className="mx-auto w-full max-w-lg border border-zinc-700 rounded-lg overflow-hidden mb-4">
-              <OptimizedYouTubeEmbed
+          <div className="flex flex-col overflow-y-auto p-4 rounded-lg">
+            <div className="overflow-hidden mb-4 p-4">
+              <IframeYouTubeEmbed
                 videoUrl={videoUrl}
                 width="100%"
-                height="400px"
+                height="500px"
                 startTime={startTime}
               />
             </div>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-zinc-300 mb-2">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-zinc-300">
                 Video Topics Timeline
               </h3>
             </div>
@@ -121,18 +133,7 @@ export function YouTubeInput() {
                   <button
                     type="button"
                     className="min-w-[60px] px-2 py-1 bg-zinc-800 rounded text-zinc-300 font-mono hover:bg-blue-700 transition"
-                    onClick={() => {
-                      // Convert timestamp (e.g., "01:23:45") to seconds
-                      const parts = item.timestamp
-                        .split(":")
-                        .map(Number)
-                        .reverse();
-                      const seconds =
-                        (parts[0] || 0) +
-                        (parts[1] || 0) * 60 +
-                        (parts[2] || 0) * 3600;
-                      setStartTime(seconds);
-                    }}
+                    onClick={() => handleInlineCLicks(item.timestamp)}
                   >
                     {item.timestamp}
                   </button>
@@ -144,15 +145,15 @@ export function YouTubeInput() {
         )}
 
         {topics?.length > 0 && (
-          <div className="flex flex-col overflow-y-auto bg-gray-100 p-4 rounded-lg">
+          <div className="flex flex-col overflow-y-auto  p-4 rounded-lg">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-zinc-300 mb-2">
                 Video Chat
               </h3>
             </div>
-            <div className="chat-input-container flex h-50 overflow-y-auto bg-gray-100 p-4 rounded-full">
+            <div className="chat-input-container flex h-50 overflow-y-auto p-4 rounded-full mb-2">
               <textarea
-                className="flex-1 resize-none rounded-lg p-2 border border-gray-300 text-zinc-300"
+                className="w-full px-4 py-3 bg-white/[0.05] border border-white/[0.1] rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                 value={chatQuestion}
                 onChange={e => setChatQuestion(e.target.value)}
                 placeholder="Type your question..."
@@ -181,7 +182,7 @@ export function YouTubeInput() {
                     return (
                       <button
                         onClick={() => setStartTime(seconds)}
-                        className="bg-blue-200 hover:bg-blue-300 text-white font-bold py-1 px-1 rounded-full ml-2 disabled:bg-zinc-700 disabled:cursor-not-allowed"
+                        className="bg-blue-200 hover:bg-blue-300 font-bold py-1 px-1 rounded-full ml-2 disabled:bg-zinc-700 disabled:cursor-not-allowed"
                       >
                         {line}
                       </button>
@@ -194,15 +195,15 @@ export function YouTubeInput() {
           </div>
         )}
         {topics?.length > 0 && (
-          <div className="flex flex-col overflow-y-auto bg-gray-100 p-4 rounded-lg">
+          <div className="flex flex-col overflow-y-auto p-4 rounded-lg">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-zinc-300 mb-2">
                 Visual Video Search
               </h3>
             </div>
-            <div className="chat-input-container flex h-50 overflow-y-auto bg-gray-100 p-4 rounded-full">
+            <div className="chat-input-container flex h-50 overflow-y-auto p-4 rounded-full">
               <textarea
-                className="flex-1 resize-none rounded-lg p-2 border border-gray-300 text-zinc-300"
+                className="w-full px-4 py-3 bg-white/[0.05] border border-white/[0.1] rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all p4"
                 value={searchQuestion}
                 onChange={e => setSearchQuestion(e.target.value)}
                 placeholder="Type your search question..."
@@ -210,7 +211,7 @@ export function YouTubeInput() {
             </div>
             <button
               onClick={handleSearch}
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-full ml-2 disabled:bg-zinc-700 disabled:cursor-not-allowed"
+              className="bg-blue-500 hover:bg-blue-700 font-bold py-2 px-6 rounded-full ml-2 disabled:bg-zinc-700 disabled:cursor-not-allowed"
             >
               Search
             </button>
@@ -220,20 +221,21 @@ export function YouTubeInput() {
               </div>
             )}
             {startingTime > 0 && (
-              <div className=" p-4 rounded-lg border-zinc-700 mt-4">
-                <div className="mx-auto w-full max-w-lg border border-zinc-700 rounded-lg overflow-hidden">
-                  <OptimizedYouTubeEmbed
+              <div>
+                <div className="overflow-hidden mb-4 p-4">
+                  <IframeYouTubeEmbed
                     videoUrl={videoUrl}
-                    width="100%"
-                    height="400px"
                     startTime={startingTime}
+                    width="100%"
+                    height="500px"
                     autoPlay={1}
+                    startOnTime={true}
                   />                  
                 </div>
               </div>
             )}
           </div>
-        )}
+         )}
       </div>
     </div>
   );

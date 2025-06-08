@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
         3.  If the search query is related to a timestamp found in the VideoAnalysis, use that timestamp (HH:MM:SS).
         4.  If the search query is related to a timestamp found in the VideoTranscript (which are in seconds), convert the seconds to HH:MM:SS format.
         5.  If multiple instances of the search query exist, return the starting time of the *first* instance found.
-        6.  If the requested moment in the video cannot be confidently identified based on the provided context, respond with "I don't know".
+        6.  If the requested moment in the video cannot be confidently identified based on the provided context, use the url to search the video.
 
         **User's Question:**
 
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
 
         json
         {
-            "startingTime": "HH:MM:SS" // Or "I don't know"
+            "startingTime": "HH:MM:SS" 
         }`;
 
     const result = await getGeminiResponse([

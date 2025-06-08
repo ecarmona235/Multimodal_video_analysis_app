@@ -1,8 +1,6 @@
-import { YouTubeEmbed } from "@next/third-parties/google";
-import React, { use, useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { getYouTubeVideoIdFromUrl } from "@/utils/youtube";
 import { useState } from "react";
-
 
 interface OptimizedYouTubeEmbedProps {
   videoUrl: string; // Accepts the full YouTube video URL
@@ -10,11 +8,12 @@ interface OptimizedYouTubeEmbedProps {
   width?: string | number;
   height?: string | number;
   autoPlay?: number; // Optional prop to control autoplay
+  startOnTime?: boolean; // Optional prop to control start time
 }
 
-export function OptimizedYouTubeEmbed({
+export function IframeYouTubeEmbed({
   videoUrl,
-  startTime=0,
+  startTime,
   width,
   height,
   ...rest
@@ -28,9 +27,10 @@ export function OptimizedYouTubeEmbed({
   }, [videoUrl]); // Re-run effect when URL changes
   useEffect(() => {
     setAutoPlay(1); // Set autoplay to 1 to play the video after seeking
-    seekTo(startTime); // Seek to startTime when the component mounts or startTime changes
-    console.log(`Seeking to start time: ${startTime}`);
-    
+    if (typeof startTime === "number") {
+      seekTo(startTime); // Seek to startTime when the component mounts or startTime changes
+      console.log(`Seeking to start time: ${startTime}`);
+    }
   }, [startTime]); // Re-run effect when startTime changes}
   useEffect(() => {
     // This effect loads the YouTube IFrame Player API
@@ -39,6 +39,7 @@ export function OptimizedYouTubeEmbed({
     tag.src = "https://www.youtube.com/iframe_api";
     const firstScriptTag = document.getElementsByTagName("script")[0]; // Use index 0 to get the first script tag
     firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
+    
 
     (window as any).onYouTubeIframeAPIReady = () => {
       // API is ready, you can now create a player instance
@@ -57,6 +58,8 @@ export function OptimizedYouTubeEmbed({
       }
     };
 
+
+
     return () => {
       // Clean up the player instance when the component unmounts
       if (playerRef.current && playerRef.current.destroy) {
@@ -64,6 +67,7 @@ export function OptimizedYouTubeEmbed({
       }
     };
   }, [videoId]); // Re-run effect when videoId changes to create a new player
+
 
   // Function to seek to a specific time and play
   const seekTo = (seconds: number) => {
@@ -73,7 +77,6 @@ export function OptimizedYouTubeEmbed({
       playerRef.current.seekTo(seconds, true); // seekTo(seconds, allowSeekAhead)
     }
   };
-
   const onPlayerReady = (event: any) => {
     // The player is ready. You can now use the seekTo function.
     // If you want to initially seek to startTime, you can call seekTo(startTime) here
@@ -81,10 +84,17 @@ export function OptimizedYouTubeEmbed({
       seekTo(startTime);
     }
   };
+  let src = "";
+  if (rest.startOnTime) {
+    src = `https://www.youtube.com/embed/${videoId}?enablejsapi=1&autoplay=${autoPlay}&start=${startTime}`;
+  } else {
+    src = `https://www.youtube.com/embed/${videoId}?enablejsapi=1&autoplay=${autoPlay}`;
+  }
 
   if (!videoId) {
     return <div>Invalid YouTube URL or video ID not found.</div>;
   }
+
 
   return (
     <div>
@@ -94,10 +104,7 @@ export function OptimizedYouTubeEmbed({
           id="youtube-player" // Assign a unique ID to the iframe
           width={width || 560}
           height={height || 315}
-          // The src will be constructed by the YouTubeEmbed component.
-          // ensure 'enablejsapi=1' is included in the params prop if you use it for other parameters.
-          // If not using params for anything else, you can explicitly add it to the src here:
-          src={`https://www.youtube.com/embed/${videoId}?enablejsapi=1&autoplay=${autoPlay}`}
+          src={src}
           title="YouTube video player"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
