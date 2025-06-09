@@ -49,6 +49,7 @@ export function YouTubeInput() {
           downloadVideoInBackground(videoUrl);
         }
       }
+      
     }
   };
 
@@ -69,6 +70,7 @@ export function YouTubeInput() {
 
   const handleSearch = async () => {
     setIsSearchLoading(true);
+    setStartingTime(0)
     const response = await fetch("/api/query-search", {
       method: "POST",
       body: JSON.stringify({ videoUrl, searchQuestion }),
@@ -85,19 +87,21 @@ export function YouTubeInput() {
         body: JSON.stringify({ videoId, searchQuery: searchQuery }),
       });
       const data = await response.json();
-      console.log(data)
+      console.log("In search: ", data)
       const firstKey = Object.keys(data)[0];
-      setStartingTime(data[firstKey]*1);
+      setStartingTime(data[firstKey]);
 
     }
     setIsSearchLoading(false);
   };
 
   const handleInlineCLicks = (timeStamp: string) => {
-    const parts = timeStamp.split(":").map(Number).reverse();
+    const cleanTime = timeStamp.replace(/[^\d:]/g, ""); // removes everything except digits and colons
+    const parts = cleanTime.split(":").map(Number).reverse();
     const seconds =
       (parts[0] || 0) + (parts[1] || 0) * 60 + (parts[2] || 0) * 3600;
     setStartTime(seconds);
+    
   };
 
   return (
@@ -122,7 +126,7 @@ export function YouTubeInput() {
         <button
           type="button"
           disabled={!videoUrl.trim()}
-          className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-700 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-zinc-900"
+          className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-zinc-900"
           onClick={handleSubmit}
         >
           {isLoading ? "Analyzing,please wait.." : "Analyze Video"}
@@ -134,12 +138,13 @@ export function YouTubeInput() {
         )}
         {topics?.length > 0 && (
           <div className="flex flex-col overflow-y-auto p-4 rounded-lg">
-            <div className="overflow-hidden mb-4 p-4">
+            <div className="mb-4 p-4">
               <IframeYouTubeEmbed
                 videoUrl={videoUrl}
                 width="100%"
                 height="500px"
                 startTime={startTime}
+                startOnTime={false}
               />
             </div>
             <div className="flex items-center justify-between">
@@ -152,7 +157,7 @@ export function YouTubeInput() {
                 <div key={index} className="flex items-start gap-3 text-sm">
                   <button
                     type="button"
-                    className="min-w-[60px] px-2 py-1 bg-zinc-800 rounded text-zinc-300 font-mono hover:bg-blue-700 transition"
+                    className="px-2 py-1 bg-zinc-800 rounded text-zinc-300 font-mono hover:bg-blue-700"
                     onClick={() => handleInlineCLicks(item.timestamp)}
                   >
                     {item.timestamp}
@@ -173,14 +178,14 @@ export function YouTubeInput() {
             </div>
             <div className="chat-input-container flex h-50 overflow-y-auto p-4 rounded-full mb-2">
               <textarea
-                className="w-full px-4 py-3 bg-white/[0.05] border border-white/[0.1] rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                className="w-full px-4 py-3 bg-white/[0.05] border border-white/[0.1] rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 value={chatQuestion}
                 onChange={e => setChatQuestion(e.target.value)}
                 placeholder="Type your question..."
               />
               <button
                 onClick={handleChats}
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-full ml-2 disabled:bg-zinc-700 disabled:cursor-not-allowed"
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-full ml-2"
               >
                 Send
               </button>
@@ -192,22 +197,18 @@ export function YouTubeInput() {
             )}
             {answer?.length > 0 && (
               <div>
-                {answer.split(" ").map((line, index) => {
-                  if (line.match(/\(?\d{2}:\d{2}:\d{2}\)?/g)) {
-                    const parts = line.split(":").map(Number).reverse();
-                    const seconds =
-                      (parts[0] || 0) +
-                      (parts[1] || 0) * 60 +
-                      (parts[2] || 0) * 3600;
+                {answer.split(" ").map((line) => {
+                  if (line.match(/\[\d{2}:\d{2}:\d{2}\]/g)) {
                     return (
                       <button
-                        onClick={() => setStartTime(seconds)}
-                        className="bg-blue-200 hover:bg-blue-300 font-bold py-1 px-1 rounded-full ml-2 disabled:bg-zinc-700 disabled:cursor-not-allowed"
+                        onClick={() => handleInlineCLicks(line)}
+                        className="bg-blue-500 hover:bg-blue-300 font-bold py-1 px-1 rounded-full ml-2"
                       >
                         {line}
                       </button>
                     );
                   }
+
                   return ` ${line} `;
                 })}
               </div>
@@ -223,15 +224,16 @@ export function YouTubeInput() {
             </div>
             <div className="chat-input-container flex h-50 overflow-y-auto p-4 rounded-full">
               <textarea
-                className="w-full px-4 py-3 bg-white/[0.05] border border-white/[0.1] rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all p4"
+                className="w-full px-4 py-3 bg-white/[0.05] border border-white/[0.1] rounded-lg text-white placeholder-zinc-500 p4"
                 value={searchQuestion}
                 onChange={e => setSearchQuestion(e.target.value)}
                 placeholder="Type your search question..."
+                id={`search_${videoId}`}
               />
             </div>
             <button
               onClick={handleSearch}
-              className="bg-blue-500 hover:bg-blue-700 font-bold py-2 px-6 rounded-full ml-2 disabled:bg-zinc-700 disabled:cursor-not-allowed"
+              className="bg-blue-500 hover:bg-blue-700 font-bold py-2 px-6 rounded-full ml-2"
             >
               Search
             </button>
@@ -245,7 +247,7 @@ export function YouTubeInput() {
                 <div className="overflow-hidden mb-4 p-4">
                   <IframeYouTubeEmbed
                     videoUrl={videoUrl}
-                    startTime={startingTime}
+                    startTime={167.125}
                     width="100%"
                     height="500px"
                     autoPlay={0}
