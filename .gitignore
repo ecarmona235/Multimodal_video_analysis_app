@@ -1,0 +1,8 @@
+
+
+.env*
+env*
+
+video_store
+
+__pycache__/
