@@ -69,7 +69,6 @@ export function IframeYouTubeEmbed({
   const seekTo = (seconds: number) => {
     console.log(`Seeking to ${seconds} seconds`);
     if (playerRef.current && playerRef.current.seekTo) {
-      setAutoPlay(1); // Set autoplay to 1 to play the video after seeking
       playerRef.current.seekTo(seconds, true); // seekTo(seconds, allowSeekAhead)
     }
   };
@@ -82,9 +81,10 @@ export function IframeYouTubeEmbed({
   };
   let src = "";
   if (rest.startOnTime) {
-    src = `https://www.youtube.com/embed/${videoId}?enablejsapi=1&autoplay=${autoPlay}&start=${startTime}`;
+    console.log("starting at startime", startTime)
+    src = `https://www.youtube.com/embed/${videoId}?enablejsapi=1&autoplay=${1}&start=${startTime}`;
   } else {
-    src = `https://www.youtube.com/embed/${videoId}?enablejsapi=1&autoplay=${autoPlay}`;
+    src = `https://www.youtube.com/embed/${videoId}?enablejsapi=1&autoplay=${0}`;
   }
 
   if (!videoId) {
@@ -101,7 +101,7 @@ export function IframeYouTubeEmbed({
           height={height || 315}
           src={src}
           title="YouTube video player"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
         ></iframe>
       )}

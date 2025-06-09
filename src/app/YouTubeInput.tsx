@@ -41,6 +41,7 @@ export function YouTubeInput() {
       setTopics(parsedData);
       const id = getYouTubeVideoIdFromUrl(videoUrl);
       console.log(id)
+      setStartTime(0)
       if (id) {
         setVideoId(id);
         const exist = await checkIfFileExists(`video_store/frames_${id}`); 
@@ -86,7 +87,8 @@ export function YouTubeInput() {
       const data = await response.json();
       console.log(data)
       const firstKey = Object.keys(data)[0];
-      setStartingTime(data[firstKey]);
+      setStartingTime(data[firstKey]*1);
+
     }
     setIsSearchLoading(false);
   };
@@ -246,7 +248,7 @@ export function YouTubeInput() {
                     startTime={startingTime}
                     width="100%"
                     height="500px"
-                    autoPlay={1}
+                    autoPlay={0}
                     startOnTime={true}
                   />
                 </div>
