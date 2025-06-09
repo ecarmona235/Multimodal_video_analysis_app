@@ -1,21 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getGeminiResponse } from "@/utils/geminiClient";
-import redis from "@/utils/redis";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const videoUrl = body.videoUrl;
     const searchQuestion = body.searchQuestion || "";
 
-    const cachedQueryTranscript = await redis.hget(
-      `initial_query:${videoUrl}`,
-      `transcript`
-    );
-    const cachedQueryAnalysis = await redis.hget(
-      `initial_query:${videoUrl}`,
-      `long analysis`
-    );
     console.log("search question:", searchQuestion);
     const prompt = `You are an AI assistant specialized in analysis of user question to extract search queries related to the content of a video.
 
@@ -31,7 +21,7 @@ export async function POST(request: NextRequest) {
 
         json
         {
-            "searchQuery": "keyword1....+keywordN", 
+            "searchQuery": "keyword1 keyword2 keywordN"  // no spaces before the first keyword and no spaces after the last keyword. 
         }`;
 
     const result = await getGeminiResponse([

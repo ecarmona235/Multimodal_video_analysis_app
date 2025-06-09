@@ -3,6 +3,10 @@
 import React from "react";
 import { useState } from "react";
 import { IframeYouTubeEmbed } from "./EmbedVideo";
+import { downloadVideoInBackground } from "@/utils/prepareVideo";
+import { checkIfFileExists } from "@/utils/check_file";
+import { getYouTubeVideoIdFromUrl } from "@/utils/youtube";
+
 interface Topic {
   timestamp: string;
   topic: string;
@@ -10,16 +14,18 @@ interface Topic {
 
 export function YouTubeInput() {
   const [videoUrl, setVideoUrl] = useState("");
+  const [videoId, setVideoId] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [topics, setTopics] = useState<Topic[]>([]);
   const [startTime, setStartTime] = useState<number>(0);
+  const [startingTime, setStartingTime] = useState<number>(0);
   const [chatCount, setChatCount] = useState(0);
   const [chatQuestion, setChatQuestion] = useState("");
   const [isChatLoading, setIsChatLoading] = useState(false);
   const [answer, setAnswer] = useState("");
   const [isSearchLoading, setIsSearchLoading] = useState(false);
   const [searchQuestion, setSearchQuestion] = useState("");
-  const [searchQueries, setSearchQueries] = useState("");
+  const [searchQuery, setSearchQueries] = useState("");
 
   const handleSubmit = async () => {
     setIsLoading(true);
@@ -33,6 +39,15 @@ export function YouTubeInput() {
     const parsedData = data ? JSON.parse(data).topics : undefined;
     if (parsedData) {
       setTopics(parsedData);
+      const id = getYouTubeVideoIdFromUrl(videoUrl);
+      console.log(id)
+      if (id) {
+        setVideoId(id);
+        const exist = await checkIfFileExists(`video_store/frames_${id}`); 
+        if (exist === false) {
+          downloadVideoInBackground(videoUrl);
+        }
+      }
     }
   };
 
@@ -53,17 +68,27 @@ export function YouTubeInput() {
 
   const handleSearch = async () => {
     setIsSearchLoading(true);
-    const response = await fetch("/api/video-search", {
+    const response = await fetch("/api/query-search", {
       method: "POST",
       body: JSON.stringify({ videoUrl, searchQuestion }),
     });
-    setIsSearchLoading(false);
     const data = await response.json();
+    console.log("initial data", data);
     const parsedData = data ? JSON.parse(data).searchQuery : "";
     if (parsedData !== "") {
       setSearchQueries(parsedData);
     }
-    console.log("Search Queries:", parsedData);
+    if (searchQuery != "") {
+      const response = await fetch("/api/video-image-search", {
+        method: "POST",
+        body: JSON.stringify({ videoId, searchQuery: searchQuery }),
+      });
+      const data = await response.json();
+      console.log(data)
+      const firstKey = Object.keys(data)[0];
+      setStartingTime(data[firstKey]);
+    }
+    setIsSearchLoading(false);
   };
 
   const handleInlineCLicks = (timeStamp: string) => {
@@ -213,7 +238,7 @@ export function YouTubeInput() {
                 <div className="h-8 w-8 animate-spin rounded-full border-4 border-zinc-300 border-t-blue-600" />
               </div>
             )}
-            {/* {startingTime > 0 && (
+            {startingTime > 0 && (
               <div>
                 <div className="overflow-hidden mb-4 p-4">
                   <IframeYouTubeEmbed
@@ -226,7 +251,7 @@ export function YouTubeInput() {
                   />
                 </div>
               </div>
-            )} */}
+            )}
           </div>
         )}
       </div>
