@@ -1,4 +1,7 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> fastapi-branch
 
 
 .env*
@@ -6,6 +9,7 @@ env*
 
 video_store
 
+<<<<<<< HEAD
 __pycache__/
 =======
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
@@ -50,3 +54,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 >>>>>>> nextjs-branch
+=======
+__pycache__/
+>>>>>>> fastapi-branch
