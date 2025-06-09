@@ -8,9 +8,9 @@ import json
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model, preprocess = clip.load("ViT-B/32", device=device)
 
-def search_video(video_path: Path, query: str):
+def search_video(video_path: Path, query: str) ->  dict[str]:
 
-    
+    print("starting.. looking up frames")
     basename = video_path.stem
     frame_dir = video_path.parent.parent / f"frames_{basename}"
  
@@ -51,4 +51,4 @@ def search_video(video_path: Path, query: str):
         print("Returning...")
 
         # Return top 5 matches with frame, timestamp, score
-        return results[:5]
+        return results[0]
