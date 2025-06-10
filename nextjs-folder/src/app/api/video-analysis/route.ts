@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { YoutubeTranscript, TranscriptResponse } from "youtube-transcript";
 import { getGeminiResponse } from "@/utils/geminiClient";
 import redis from "@/utils/redis";
+import { getYouTubeVideoIdFromUrl } from "@/utils/youtube";
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,6 +10,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     const videoUrl = body.videoUrl;
+    const videoId = getYouTubeVideoIdFromUrl(videoUrl) || "";
     //TODO: check if video has a transcription already else do below
     const cachedQueryTranscript = await redis.hget(
       `initial_query:${videoUrl}`,
@@ -17,10 +19,12 @@ export async function POST(request: NextRequest) {
     let transcript: TranscriptResponse[] = [];
     if (cachedQueryTranscript) {
       transcript = JSON.parse(cachedQueryTranscript);
+      console.log("logging cached: ", transcript);
     } else {
       transcript = await YoutubeTranscript.fetchTranscript(videoUrl);
-
-      if (transcript.length > 0) {
+      console.log("logging: ", transcript);
+      if (transcript.length !== 0) {
+        console.log(transcript);
         await redis.hset(
           `initial_query:${videoUrl}`,
           `transcript`,
@@ -28,6 +32,7 @@ export async function POST(request: NextRequest) {
         );
       }
     }
+
     const prompt = `Analyze this transcript, where the offset time is given in seconds, and provide a breakdown of the main topics that are discussed in the video, with timestamps for each topic.
       Video_Transcript : a transcript of the video in the formt of offset in seconds and text 
       <VideoTranscript>
