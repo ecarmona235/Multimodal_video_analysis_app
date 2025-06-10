@@ -57,3 +57,4 @@ next-env.d.ts
 =======
 __pycache__/
 >>>>>>> fastapi-branch
+nextjs-folder/src/app/api/video-analysis/Monorepo_MultiModal_Analysis.code-workspace
