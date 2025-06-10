@@ -30,6 +30,8 @@ export async function POST(request: NextRequest) {
           `transcript`,
           JSON.stringify(transcript)
         );
+      } else {
+        console.log("404 error on youtube transcript");
       }
     }
 
